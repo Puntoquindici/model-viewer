@@ -156,6 +156,7 @@ export class SmoothControls extends EventDispatcher {
   private startPointerPosition = {clientX: 0, clientY: 0};
   private lastSeparation = 0;
   private touchDecided = false;
+  private scrolling = false;
 
   constructor(
       readonly camera: PerspectiveCamera, readonly element: HTMLElement,
@@ -571,10 +572,19 @@ export class SmoothControls extends EventDispatcher {
       const dxMag = Math.abs(dx);
       const dyMag = Math.abs(dy);
       // If motion is mostly vertical, assume scrolling is the intent.
+      const insideIFrame = window.top != window.self;
+      // console.log(`LUCA touchModeRotate ${touchAction} iframe:${insideIFrame} dy: ${dy} dx: ${dx} ${document.body.scrollHeight}>${window.innerHeight} iframe: `, window.top != window.self);
       if (this.isUserChange &&
-          ((touchAction === 'pan-y' && dyMag > dxMag) ||
+          ((touchAction === 'pan-y' && dyMag > dxMag && insideIFrame) ||
            (touchAction === 'pan-x' && dxMag > dyMag))) {
         this.touchMode = null;
+
+        if(!this.scrolling) {
+          this.dispatchEvent({type: 'model-scroll-freeze', freeze: true});
+          this.scrolling = true;
+          console.log('LUCA touchModeRotate touchAction', touchAction, this.scrolling);
+        }
+
         return;
       } else {
         this.element.addEventListener(
@@ -777,6 +787,13 @@ export class SmoothControls extends EventDispatcher {
 
     if (this.isUserPointing) {
       this.dispatchEvent({type: 'pointer-change-end'});
+    }
+
+    console.log('LUCA modelviewer onPointerUp', event);
+    if(this.scrolling) {
+      this.scrolling = false;
+      console.log('LUCA modelviewer onPointerUp freeze false scrolling false');
+      this.dispatchEvent({type: 'model-scroll-freeze', freeze: false});
     }
   };
 

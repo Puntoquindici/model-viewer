@@ -141,7 +141,8 @@ export class Renderer extends EventDispatcher {
         alpha: true,
         antialias: true,
         powerPreference: options.powerPreference as WebGLPowerPreference,
-        preserveDrawingBuffer: true
+        preserveDrawingBuffer: true,
+        logarithmicDepthBuffer: true
       });
       this.threeRenderer.autoClear = true;
       this.threeRenderer.outputEncoding = sRGBEncoding;

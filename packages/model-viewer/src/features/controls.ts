@@ -457,6 +457,12 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
       this[$controls].addEventListener(
           'pointer-change-end',
           this[$onPointerChange] as (event: Event) => void);
+      // P15: manage freeze-to-scroll: relay event
+      // console.log('LUCA modelviewer controls installing relay');
+      this[$controls].addEventListener('model-scroll-freeze', async (event) => {
+        // console.log('LUCA modelviewer controls model-scroll-freeze relay');
+        this.dispatchEvent(new CustomEvent('scroll-freeze', {detail: {freeze: event.freeze}}));
+        });
     }
 
     disconnectedCallback() {
