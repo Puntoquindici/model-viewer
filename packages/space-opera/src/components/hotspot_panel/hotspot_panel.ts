@@ -45,7 +45,7 @@ export class HotspotPanel extends ConnectedLitElement {
 
   render() {
     return html`
-  <me-expandable-tab tabName="Hotspots">
+  <me-expandable-tab tabName="Hotspots" .open=${true}>
     <span slot="content">
     ${
         this.hotspots.map(

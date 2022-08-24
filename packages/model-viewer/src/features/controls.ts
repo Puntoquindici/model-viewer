@@ -27,7 +27,6 @@ import {Constructor} from '../utilities.js';
 import {timeline} from '../utilities/animation.js';
 
 
-
 // NOTE(cdata): The following "animation" timing functions are deliberately
 // being used in favor of CSS animations. In Safari 12.1 and 13, CSS animations
 // would cause the interaction prompt to glitch unexpectedly
@@ -257,7 +256,7 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     ModelViewerElement: T): Constructor<ControlsInterface>&T => {
   class ControlsModelViewerElement extends ModelViewerElement {
     @property({type: Boolean, attribute: 'camera-controls'})
-    cameraControls: boolean = false;
+    cameraControls = false;
 
     @style({
       intrinsics: cameraOrbitIntrinsics,
@@ -291,7 +290,7 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     })
     @property(
         {type: String, attribute: 'min-camera-orbit', hasChanged: () => true})
-    minCameraOrbit: string = 'auto';
+    minCameraOrbit = 'auto';
 
     @style({
       intrinsics: maxCameraOrbitIntrinsics,
@@ -299,7 +298,7 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     })
     @property(
         {type: String, attribute: 'max-camera-orbit', hasChanged: () => true})
-    maxCameraOrbit: string = 'auto';
+    maxCameraOrbit = 'auto';
 
     @style({
       intrinsics: minFieldOfViewIntrinsics,
@@ -307,7 +306,7 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     })
     @property(
         {type: String, attribute: 'min-field-of-view', hasChanged: () => true})
-    minFieldOfView: string = 'auto';
+    minFieldOfView = 'auto';
 
     @style({
       intrinsics: maxFieldOfViewIntrinsics,
@@ -315,7 +314,7 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     })
     @property(
         {type: String, attribute: 'max-field-of-view', hasChanged: () => true})
-    maxFieldOfView: string = 'auto';
+    maxFieldOfView = 'auto';
 
     @property({type: Number, attribute: 'interaction-prompt-threshold'})
     interactionPromptThreshold: number = DEFAULT_INTERACTION_PROMPT_THRESHOLD;
@@ -332,13 +331,12 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     interactionPolicy: InteractionPolicy = InteractionPolicy.ALWAYS_ALLOW;
 
     @property({type: Number, attribute: 'orbit-sensitivity'})
-    orbitSensitivity: number = 1;
+    orbitSensitivity = 1;
 
     @property({type: String, attribute: 'touch-action'})
     touchAction: TouchAction = TouchAction.PAN_Y;
 
-    @property({type: Boolean, attribute: 'disable-zoom'})
-    disableZoom: boolean = false;
+    @property({type: Boolean, attribute: 'disable-zoom'}) disableZoom = false;
 
     @property({type: String, attribute: 'bounds'}) bounds: Bounds = 'legacy';
 
@@ -419,6 +417,14 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
       this[$controls].addEventListener(
           'pointer-change-end',
           this[$onPointerChange] as (event: Event) => void);
+
+      // P15: manage freeze-to-scroll: relay event
+      // console.log('LUCA modelviewer controls installing relay');
+      this[$controls].addEventListener('model-scroll-freeze', async (event) => {
+        // console.log('LUCA modelviewer controls model-scroll-freeze relay');
+        this.dispatchEvent(
+            new CustomEvent('scroll-freeze', {detail: {freeze: event.freeze}}));
+      });
     }
 
     disconnectedCallback() {

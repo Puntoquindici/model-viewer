@@ -118,9 +118,9 @@ export interface PointerChangeEvent extends ThreeEvent {
  * ensure that the camera's matrixWorld is in sync before using SmoothControls.
  */
 export class SmoothControls extends EventDispatcher {
-  public sensitivity = 1;
+  sensitivity = 1;
 
-  private _interactionEnabled: boolean = false;
+  private _interactionEnabled = false;
   private _options: SmoothControlsOptions;
   private _disableZoom = false;
   private isUserChange = false;
@@ -145,6 +145,7 @@ export class SmoothControls extends EventDispatcher {
   private lastTouches!: TouchList;
   private touchMode: TouchMode = 'rotate';
   private touchDecided = false;
+  private scrolling = false;
 
   constructor(
       readonly camera: PerspectiveCamera, readonly element: HTMLElement) {
@@ -490,7 +491,8 @@ export class SmoothControls extends EventDispatcher {
     if (!this.pointerIsDown || !this.canInteract) {
       return;
     }
-
+    // console.log('LUCA modelviewer onPointerMove 2');
+    // this.dispatchEvent({type: 'model-scroll-freeze', freeze: true});
     // NOTE(cdata): We test event.type as some browsers do not have a global
     // TouchEvent contructor.
     if (TOUCH_EVENT_RE.test(event.type)) {
@@ -520,10 +522,24 @@ export class SmoothControls extends EventDispatcher {
             // unless scrolling is not possible. Use window.innerHeight
             // instead of body.clientHeight so that a full-screen element will
             // still scroll the URL bar out of the way before locking.
-            if ((touchAction === 'pan-y' && dy > dx &&
-                 document.body.scrollHeight > window.innerHeight) ||
+
+            // 'frameElement', window.frameElement, 'top, self', window.top,
+            // window.self console.log(`LUCA rotate ${touchAction} dy: ${dy} dx:
+            // ${dx} ${document.body.scrollHeight}>${window.innerHeight} iframe:
+            // `, window.top != window.self);
+            const insideIFrame = window.top != window.self;
+            if ((touchAction === 'pan-y' && dy > dx && insideIFrame
+            /* inside iframe these are always equal, if we are not inside an iframe scrolling has no use
+            && document.body.scrollHeight > window.innerHeight */ ) ||
                 (touchAction === 'pan-x' && dx > dy)) {
               this.touchMode = 'scroll';
+
+              // console.log('LUCA modelviewer touchAction', touchAction,
+              // this.scrolling);
+              if (!this.scrolling) {
+                this.dispatchEvent({type: 'model-scroll-freeze', freeze: true});
+                this.scrolling = true;
+              }
               return;
             }
           }
@@ -540,7 +556,7 @@ export class SmoothControls extends EventDispatcher {
 
     if (event.cancelable) {
       event.preventDefault();
-    };
+    }
   };
 
   private handleSinglePointerMove(pointer: Pointer) {
@@ -593,8 +609,14 @@ export class SmoothControls extends EventDispatcher {
   }
 
   private onPointerUp = (_event: MouseEvent|TouchEvent) => {
+    // console.log('LUCA onPointerUp', this.scrolling);
     this.element.style.cursor = 'grab';
     this.pointerIsDown = false;
+    if (this.scrolling) {
+      this.scrolling = false;
+      this.dispatchEvent({type: 'model-scroll-freeze', freeze: false});
+    }
+
 
     if (this.isUserPointing) {
       this.dispatchEvent(

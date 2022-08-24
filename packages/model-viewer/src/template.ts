@@ -20,6 +20,9 @@ import ARGlyph from './assets/view-in-ar-material-svg.js';
 const template = document.createElement('template');
 template.innerHTML = `
 <style>
+.hidden {
+  display: none;
+}
 :host {
   display: block;
   position: relative;

@@ -51,7 +51,7 @@ export class PosterControlsElement extends ConnectedLitElement {
 
   render() {
     return html`
-<me-expandable-tab tabName="Poster">
+<me-expandable-tab tabName="Poster" .open=${true}>
   <div slot="content">
     <mwc-button unelevated class="PosterButton" 
       @click="${this.onCreatePoster}">Generate Poster</mwc-button>
@@ -84,7 +84,7 @@ export class PosterControlsElement extends ConnectedLitElement {
       modelViewer.jumpCameraToGoal();
       requestAnimationFrame(async () => {
         let posterUrl =
-            createSafeObjectURL(await modelViewer.toBlob({idealAspect: true}));
+            createSafeObjectURL(await modelViewer.toBlob({idealAspect: false}));
         reduxStore.dispatch(dispatchSetPoster(posterUrl.unsafeUrl));
       });
     } else {
