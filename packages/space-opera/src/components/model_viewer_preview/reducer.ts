@@ -29,11 +29,11 @@ import {renderHotspots} from '../utils/hotspot/render_hotspots.js';
 const THUMBNAIL_SIZE = 256;
 
 export function getModelViewer() {
-  return document.querySelector('model-viewer-preview')!.modelViewer;
+  return (document.querySelector('pq-model-viewer-preview') as any)!.modelViewer;
 }
 
 export async function getUpdatedModelViewer() {
-  const preview = document.querySelector('model-viewer-preview')!;
+  const preview = document.querySelector('pq-model-viewer-preview')! as any;
   const viewer = preview.modelViewer;
   await preview.updateComplete;
   await viewer.updateComplete;
