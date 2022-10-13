@@ -566,10 +566,13 @@ export class SmoothControls extends EventDispatcher {
       const dyMag = Math.abs(dy);
       const insideIFrame = window.top != window.self;
       // If motion is mostly vertical, assume scrolling is the intent.
+      // console.log("LUCA model-viewer touchModeRotate touchAction:", touchAction, "dyMag > dxMag:", dyMag > dxMag, "insideIFrame:", insideIFrame);
       if (this.changeSource === ChangeSource.USER_INTERACTION &&
-          ((touchAction === 'pan-y' && dyMag > dxMag) ||
-           (touchAction === 'pan-x' && dxMag > dyMag && insideIFrame))) {
+          ((touchAction === 'pan-y' && dyMag > dxMag) || (touchAction === 'pan-x' && dxMag > dyMag)) &&
+            insideIFrame)
+      {
         this.touchMode = null;
+        // console.log("LUCA model-viewer touchModeRotate")
         if(!this.scrolling) {
           this.dispatchEvent({type: 'model-scroll-freeze', freeze: true});
           this.scrolling = true;
