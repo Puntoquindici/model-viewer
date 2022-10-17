@@ -123,9 +123,10 @@ export class ModelViewerPreview extends ConnectedLitElement {
     if (!hasModel) {
       childElements.push(
           html
-          `<div class="HelpText">Drag a glTF or GLB here!<br/>
-          <small>Groups, folders, and Zip archives supported</small><br/>
-          <small>Drop an HDR for lighting</small></div>`);
+          `<div class="HelpText">Drag a GLB here!<br/>
+          <small>And HDR for lighting.</small><br/>
+          <small>You can also click here to open the file selection dialog.</small>
+          </div>`);
     }
 
     const emptyARConfig = {};
