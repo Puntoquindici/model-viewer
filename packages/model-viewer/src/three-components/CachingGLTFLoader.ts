@@ -14,7 +14,7 @@
  */
 
 import {Event as ThreeEvent, EventDispatcher, WebGLRenderer} from 'three';
-import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
+import {DRACOLoader} from './DRACOLoader';
 import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {KTX2Loader} from 'three/examples/jsm/loaders/KTX2Loader.js';
 

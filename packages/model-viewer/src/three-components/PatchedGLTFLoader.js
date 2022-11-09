@@ -183,7 +183,6 @@ class PatchedGLTFLoader extends Loader {
 		this.manager.itemStart( url );
 
 		const _onError = function ( e ) {
-
 			if ( onError ) {
 
 				onError( e );
@@ -1677,7 +1676,7 @@ class GLTFDracoMeshCompressionExtension {
 
 		return parser.getDependency( 'bufferView', bufferViewIndex ).then( function ( bufferView ) {
 
-			return new Promise( function ( resolve ) {
+			return new Promise( function ( resolve, reject ) {
 
 				dracoLoader.decodeDracoFile( bufferView, function ( geometry ) {
 
@@ -1692,7 +1691,9 @@ class GLTFDracoMeshCompressionExtension {
 
 					resolve( geometry );
 
-				}, threeAttributeMap, attributeTypeMap );
+				}, threeAttributeMap, attributeTypeMap, () => {
+					reject();
+				} );
 
 			} );
 
