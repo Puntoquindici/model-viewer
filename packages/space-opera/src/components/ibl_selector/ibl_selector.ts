@@ -150,8 +150,8 @@ export class IblSelector extends ConnectedLitElement {
               selectedIndex=${selectedIndex}
               style="align-self: center; width: 70%;"
               @select=${this.onSelectEnvironmentImage}>
-              <paper-item>Neutral</paper-item>
-              <paper-item value="legacy">Legacy</paper-item>
+              <paper-item value="neutral">Neutral</paper-item>
+              <paper-item>Studio Default</paper-item>
               ${
         this.environmentImages.map(
             environmentImage => html`<paper-item value=${

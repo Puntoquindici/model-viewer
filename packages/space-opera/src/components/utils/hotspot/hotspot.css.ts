@@ -76,4 +76,41 @@ export const styles: CSSResult = css`.Hotspot {
   transform: translateY(calc(-50% + 4px));
   transition: transform 0.3s, opacity 0.3s;
 }
+.Hotspot.hidden, .Dimension.hidden {
+  display: none !important;
+}
+
+.Dimension.dot{
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  background: #ddd;
+  --min-hotspot-opacity: 0;
+  padding: 0;
+}
+
+.Dimension.dim{
+  background: #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.8);
+  display: block;
+  font-family: Futura, Helvetica Neue, sans-serif
+  font-size: 18px;
+  font-weight: 700;
+  max-width: 128px;
+  overflow-wrap: break-word;
+  padding: 0.5em 1em;
+  position: absolute;
+  width: max-content;
+  height: max-content;
+  transform: translate3d(-50%, -50%, 0);
+  --min-hotspot-opacity: 0;
+}
+
+.Dimension.show, .Hotspot.show{
+  --min-hotspot-opacity: 1;
+}
 `;

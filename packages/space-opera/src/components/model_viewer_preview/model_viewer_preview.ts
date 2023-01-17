@@ -61,6 +61,7 @@ export class ModelViewerPreview extends ConnectedLitElement {
   @state() extraAttributes: any = {};
   @state() refreshButtonIsReady: boolean = false;
   @state() bestPractices?: BestPracticesState;
+  @state() gltfError: string = '';
 
   // The loadComplete promise is a testing hook that resolves once all async
   // load-related operations have completed. Await this promise after causing a
@@ -120,12 +121,16 @@ export class ModelViewerPreview extends ConnectedLitElement {
 
     // Add additional elements, editor specific.
     childElements.push(refreshMobileButton);
-    if (!hasModel) {
+    if (this.gltfError) {
+      childElements.push(html`<div class="ErrorText"><p>Error loading glTF:<br/>${
+          this.gltfError}</p><a href='https://forms.clickup.com/2677809/f/2hq1h-4061/5QBPJ083I78HWN9U6N' target="_blank">Report issue</a></div>`);
+    } else if (!hasModel) {
       childElements.push(
           html
-          `<div class="HelpText">Drag a glTF or GLB here!<br/>
-          <small>Groups, folders, and Zip archives supported</small><br/>
-          <small>Drop an HDR for lighting</small></div>`);
+          `<div class="HelpText">Drag a GLB here!<br/>
+          <small>And HDR for lighting.</small><br/>
+          <small>You can also click here to open the file selection dialog.</small>
+          </div>`);
     }
 
     const emptyARConfig = {};
@@ -146,6 +151,9 @@ export class ModelViewerPreview extends ConnectedLitElement {
                 if (this.addHotspotMode) {
                   this.addHotspot(event);
                 }
+              },
+              error: (error: CustomEvent) => {
+                this.gltfError = error.detail.sourceError.message;
               }
             },
             childElements)}`;

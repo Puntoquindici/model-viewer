@@ -14,8 +14,8 @@
  */
 
 import {Event as ThreeEvent, EventDispatcher, WebGLRenderer} from 'three';
-import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
-import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {DRACOLoader} from './DRACOLoader';
+import {GLTF} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {KTX2Loader} from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import ModelViewerElementBase from '../model-viewer-base.js';
@@ -23,6 +23,8 @@ import {CacheEvictionPolicy} from '../utilities/cache-eviction-policy.js';
 
 import GLTFMaterialsVariantsExtension from './gltf-instance/VariantMaterialLoaderPlugin';
 import {GLTFInstance, GLTFInstanceConstructor} from './GLTFInstance.js';
+// import {PatchedGLTFLoader} from './PatchedGLTFLoader';
+import {PatchedGLTFLoader} from './PatchedGLTFLoader.js';
 
 export type ProgressCallback = (progress: number) => void;
 
@@ -37,7 +39,7 @@ export interface PreloadEvent extends ThreeEvent {
  */
 export const loadWithLoader =
     (url: string,
-     loader: GLTFLoader,
+     loader: PatchedGLTFLoader,
      progressCallback: ProgressCallback = () => {}) => {
       const onProgress = (event: ProgressEvent) => {
         const fraction = event.loaded / event.total;
@@ -176,8 +178,8 @@ export class CachingGLTFLoader<T extends GLTFInstanceConstructor =
     this[$loader].setKTX2Loader(ktx2Loader);
   }
 
-  protected[$loader]: GLTFLoader = new GLTFLoader().register(
-      parser => new GLTFMaterialsVariantsExtension(parser));
+  protected[$loader]: PatchedGLTFLoader = new PatchedGLTFLoader().register(
+      (parser: any) => new GLTFMaterialsVariantsExtension(parser));
   protected[$GLTFInstance]: T;
 
   protected get[$evictionPolicy](): CacheEvictionPolicy {
