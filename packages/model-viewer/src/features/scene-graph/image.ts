@@ -13,7 +13,17 @@
  * limitations under the License.
  */
 
-import {Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, Scene, Texture as ThreeTexture, WebGLRenderTarget} from 'three';
+import {
+  Color,
+  Mesh,
+  MeshBasicMaterial,
+  OrthographicCamera,
+  PlaneGeometry,
+  Scene,
+  sRGBEncoding,
+  Texture as ThreeTexture,
+  WebGLRenderTarget
+} from 'three';
 
 import {blobCanvas} from '../../model-viewer-base.js';
 import {Image as GLTFImage} from '../../three-components/gltf-instance/gltf-2.0.js';
@@ -75,7 +85,7 @@ export class Image extends ThreeDOMElement implements ImageInterface {
     (this[$sourceObject] as GLTFImage).name = name;
   }
 
-  async createThumbnail(width: number, height: number): Promise<string> {
+  async createThumbnail(width: number, height: number, encodeSRGB: boolean): Promise<string> {
     const scene = new Scene();
     quadMaterial.map = this[$threeTexture];
     const mesh = new Mesh(quad, quadMaterial);
@@ -84,6 +94,7 @@ export class Image extends ThreeDOMElement implements ImageInterface {
 
     const {threeRenderer} = Renderer.singleton;
     const renderTarget = new WebGLRenderTarget(width, height);
+    threeRenderer.outputEncoding = sRGBEncoding;
     threeRenderer.setRenderTarget(renderTarget);
     threeRenderer.render(scene, camera);
     threeRenderer.setRenderTarget(null);
@@ -96,7 +107,25 @@ export class Image extends ThreeDOMElement implements ImageInterface {
     blobCanvas.height = height;
     const blobContext = blobCanvas.getContext('2d')!;
     const imageData = blobContext.createImageData(width, height);
-    imageData.data.set(buffer);
+    if(encodeSRGB) {
+      for(let i = 0; i < buffer.length; i+=4) {
+        // extract rgb values
+        const r = buffer[i] / 255;
+        const g = buffer[i + 1] / 255;
+        const b = buffer[i + 2] / 255;
+        const a = buffer[i + 3] / 255;
+        // build a THREE.Color
+        let color = new Color();
+        color.setRGB(r, g, b);
+        color = color.convertLinearToSRGB();
+        imageData.data[i] = color.r * 255;
+        imageData.data[i + 1] = color.g * 255;
+        imageData.data[i + 2] = color.b * 255;
+        imageData.data[i + 3] = a * 255;
+      }
+    } else {
+      imageData.data.set(buffer);
+    }
     blobContext.putImageData(imageData, 0, 0);
 
     return new Promise<string>(async (resolve, reject) => {

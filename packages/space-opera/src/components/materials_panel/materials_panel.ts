@@ -706,7 +706,7 @@ export class MaterialPanel extends ConnectedLitElement {
 
   async onTextureUpload(
       detail: FileDetails, texturePicker: TexturePicker,
-      textureInfo: TextureInfo) {
+      textureInfo: TextureInfo, encodeSRGB: boolean) {
     const {url, type} = detail;
     if (this.thumbnailsById.has(url)) {
       console.log('URL collision! Texture not updated.');
@@ -718,7 +718,7 @@ export class MaterialPanel extends ConnectedLitElement {
     }
 
     textureInfo.setTexture(texture);
-    const id = await pushThumbnail(this.thumbnailsById, textureInfo);
+    const id = await pushThumbnail(this.thumbnailsById, textureInfo, encodeSRGB);
     // Trigger async panel update / render
     this.thumbnailsById = new Map(this.thumbnailsById);
     if (id != null) {
@@ -742,7 +742,7 @@ export class MaterialPanel extends ConnectedLitElement {
     this.onTextureUpload(
         event.detail,
         this.baseColorTexturePicker,
-        this.getMaterialVariant().pbrMetallicRoughness.baseColorTexture);
+        this.getMaterialVariant().pbrMetallicRoughness.baseColorTexture, true);
   }
 
   onMetallicRoughnessTextureChange() {
@@ -757,7 +757,7 @@ export class MaterialPanel extends ConnectedLitElement {
         event.detail,
         this.metallicRoughnessTexturePicker,
         this.getMaterialVariant()
-            .pbrMetallicRoughness.metallicRoughnessTexture);
+            .pbrMetallicRoughness.metallicRoughnessTexture, false);
   }
 
   onNormalTextureChange() {
@@ -769,7 +769,7 @@ export class MaterialPanel extends ConnectedLitElement {
     this.onTextureUpload(
         event.detail,
         this.normalTexturePicker,
-        this.getMaterialVariant().normalTexture);
+        this.getMaterialVariant().normalTexture, false);
   }
 
   onEmissiveTextureChange() {
@@ -782,7 +782,7 @@ export class MaterialPanel extends ConnectedLitElement {
     this.onTextureUpload(
         event.detail,
         this.emissiveTexturePicker,
-        this.getMaterialVariant().emissiveTexture);
+        this.getMaterialVariant().emissiveTexture, true);
   }
 
   onEmissiveFactorChanged() {
@@ -801,7 +801,7 @@ export class MaterialPanel extends ConnectedLitElement {
     this.onTextureUpload(
         event.detail,
         this.occlusionTexturePicker,
-        this.getMaterialVariant().occlusionTexture);
+        this.getMaterialVariant().occlusionTexture, false);
   }
 
   onAlphaModeSelect() {

@@ -321,7 +321,7 @@ export declare interface Image {
    * resolution. Especially useful for KTX2 textures which are GPU compressed,
    * and so are unreadable on the CPU without a method like this.
    */
-  createThumbnail(width: number, height: number): Promise<string>;
+  createThumbnail(width: number, height: number, encodeSRGB: boolean): Promise<string>;
 }
 
 /**
