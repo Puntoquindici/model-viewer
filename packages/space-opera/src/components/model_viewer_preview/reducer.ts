@@ -25,9 +25,6 @@ import {ModelState, Thumbnail} from '../model_viewer_preview/types.js';
 import {renderHotspots} from '../utils/hotspot/render_hotspots.js';
 
 
-
-const THUMBNAIL_SIZE = 256;
-
 export function getModelViewer() {
   return (document.querySelector('pq-model-viewer-preview') as any)!.modelViewer;
 }
@@ -78,8 +75,7 @@ export function getTextureId(gltfImage: Image): string {
 
 export async function pushThumbnail(
     thumbnailsById: Map<string, Thumbnail>,
-    textureInfo: TextureInfo,
-    encodeSRGB: boolean): Promise<string|null> {
+    textureInfo: TextureInfo): Promise<string|null> {
   const {texture} = textureInfo;
   if (texture == null) {
     return null;
@@ -88,7 +84,7 @@ export async function pushThumbnail(
   const id = getTextureId(source);
   if (!thumbnailsById.has(id)) {
     thumbnailsById.set(id, {
-      objectUrl: await source.createThumbnail(THUMBNAIL_SIZE, THUMBNAIL_SIZE, encodeSRGB),
+      objectUrl: await source.createThumbnail(),
       texture
     });
   }
@@ -106,11 +102,11 @@ async function createThumbnails(): Promise<Map<string, Thumbnail>> {
       occlusionTexture
     } = material;
     const {baseColorTexture, metallicRoughnessTexture} = pbrMetallicRoughness;
-    await pushThumbnail(thumbnailsById, normalTexture, false);
-    await pushThumbnail(thumbnailsById, emissiveTexture, true);
-    await pushThumbnail(thumbnailsById, occlusionTexture, false);
-    await pushThumbnail(thumbnailsById, baseColorTexture, true);
-    await pushThumbnail(thumbnailsById, metallicRoughnessTexture, false);
+    await pushThumbnail(thumbnailsById, normalTexture);
+    await pushThumbnail(thumbnailsById, emissiveTexture);
+    await pushThumbnail(thumbnailsById, occlusionTexture);
+    await pushThumbnail(thumbnailsById, baseColorTexture);
+    await pushThumbnail(thumbnailsById, metallicRoughnessTexture);
   }
   return thumbnailsById;
 }

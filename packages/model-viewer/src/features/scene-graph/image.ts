@@ -14,27 +14,15 @@
  */
 
 import {
-  Color,
-  Mesh,
-  MeshBasicMaterial,
-  OrthographicCamera,
-  PlaneGeometry,
-  Scene,
-  sRGBEncoding,
   Texture as ThreeTexture,
-  WebGLRenderTarget
 } from 'three';
 
 import {blobCanvas} from '../../model-viewer-base.js';
 import {Image as GLTFImage} from '../../three-components/gltf-instance/gltf-2.0.js';
-import {Renderer} from '../../three-components/Renderer.js';
 
 import {Image as ImageInterface} from './api.js';
 import {$correlatedObjects, $sourceObject, ThreeDOMElement} from './three-dom-element.js';
 
-
-const quadMaterial = new MeshBasicMaterial();
-const quad = new PlaneGeometry(2, 2);
 let adhocNum = 0;
 
 export const $threeTexture = Symbol('threeTexture');
@@ -85,49 +73,12 @@ export class Image extends ThreeDOMElement implements ImageInterface {
     (this[$sourceObject] as GLTFImage).name = name;
   }
 
-  async createThumbnail(width: number, height: number, encodeSRGB: boolean): Promise<string> {
-    const scene = new Scene();
-    quadMaterial.map = this[$threeTexture];
-    const mesh = new Mesh(quad, quadMaterial);
-    scene.add(mesh);
-    const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-    const {threeRenderer} = Renderer.singleton;
-    const renderTarget = new WebGLRenderTarget(width, height);
-    threeRenderer.outputEncoding = sRGBEncoding;
-    threeRenderer.setRenderTarget(renderTarget);
-    threeRenderer.render(scene, camera);
-    threeRenderer.setRenderTarget(null);
-
-    const buffer = new Uint8Array(width * height * 4);
-    threeRenderer.readRenderTargetPixels(
-        renderTarget, 0, 0, width, height, buffer);
-
-    blobCanvas.width = width;
-    blobCanvas.height = height;
+  async createThumbnail(): Promise<string> {
+    blobCanvas.width = this[$threeTexture].image.width;
+    blobCanvas.height = this[$threeTexture].image.height;
+    
     const blobContext = blobCanvas.getContext('2d')!;
-    const imageData = blobContext.createImageData(width, height);
-    if(encodeSRGB) {
-      for(let i = 0; i < buffer.length; i+=4) {
-        // extract rgb values
-        const r = buffer[i] / 255;
-        const g = buffer[i + 1] / 255;
-        const b = buffer[i + 2] / 255;
-        const a = buffer[i + 3] / 255;
-        // build a THREE.Color
-        let color = new Color();
-        color.setRGB(r, g, b);
-        color = color.convertLinearToSRGB();
-        imageData.data[i] = color.r * 255;
-        imageData.data[i + 1] = color.g * 255;
-        imageData.data[i + 2] = color.b * 255;
-        imageData.data[i + 3] = a * 255;
-      }
-    } else {
-      imageData.data.set(buffer);
-    }
-    blobContext.putImageData(imageData, 0, 0);
-
+    blobContext.drawImage(this[$threeTexture].image, 0, 0);
     return new Promise<string>(async (resolve, reject) => {
       blobCanvas.toBlob(blob => {
         if (!blob) {
