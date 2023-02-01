@@ -375,6 +375,7 @@ class PatchedGLTFLoader extends Loader {
 
 					case EXTENSIONS.KHR_DRACO_MESH_COMPRESSION:
 						extensions[ extensionName ] = new GLTFDracoMeshCompressionExtension( json, this.dracoLoader );
+						window.postMessage({type: 'draco'}, '*');
 						break;
 
 					case EXTENSIONS.KHR_TEXTURE_TRANSFORM:
