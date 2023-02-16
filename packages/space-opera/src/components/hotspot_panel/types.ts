@@ -16,7 +16,7 @@
  */
 
 import {Vector3D} from '@google/model-viewer/lib/model-viewer-base';
-
+export type HotspotAlignment = 'left' | 'right' | 'up' | 'down' | 'upleft' | 'upright' | 'downleft' | 'downright'
 /** Config for a single hotspot */
 export interface HotspotConfig {
   // Name of the hotspot, needs to be unique among all hotspots.
@@ -24,6 +24,11 @@ export interface HotspotConfig {
   position: Vector3D;
   normal?: Vector3D;
   annotation?: string;
+  title?: string;
+  link?: string;
+  linkLabel?: string;
+  defaultOpen?: boolean;
+  align?: HotspotAlignment;
 }
 
 /** Converts a number array to vector3D */

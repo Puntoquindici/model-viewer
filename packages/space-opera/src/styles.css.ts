@@ -93,6 +93,19 @@ textarea {
   resize: vertical;
   width: 100%;
 }
+
+.align {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  flex-direction: column;
+}
+  
+.align .row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
 `;
 
 export const iblSelectorStyles: CSSResult = css`

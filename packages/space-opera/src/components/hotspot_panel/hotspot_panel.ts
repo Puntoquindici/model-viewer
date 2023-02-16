@@ -15,7 +15,7 @@
  *
  */
 
-import '../shared/expandable_content/expandable_tab.js';
+// import '../shared/expandable_content/expandable_tab.js';
 import './hotspot_editor.js';
 import '@material/mwc-button';
 

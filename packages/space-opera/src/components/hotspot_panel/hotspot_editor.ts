@@ -15,8 +15,8 @@
  *
  */
 
-import '../shared/expandable_content/expandable_tab.js';
-import '../shared/section_row/section_row.js';
+// import '../shared/expandable_content/expandable_tab.js';
+// import '../shared/section_row/section_row.js';
 import '@material/mwc-icon-button';
 
 import {html, LitElement, PropertyValues} from 'lit';

@@ -21,13 +21,13 @@ export const styles: CSSResult = css`:host {
   font-family: Roboto;
   /* MATERIAL_COLOR_GOOGLE_GREY_300 */
   color: #dadce0;
-  --me-theme-focused-color: #4285f4;
+  --me-theme-focused-color: #00B0BE;
   /* MATERIAL_COLOR_GOOGLE_GREY_800 */
   --me-theme-tab-background-color: #3c4043;
   /* MATERIAL_COLOR_GOOGLE_GREY_300 */
   --me-theme-tab-default-color: #dadce0;
   /* MATERIAL_COLOR_GOOGLE_BLUE_500 */
-  --me-theme-tab-selected-color: #4285f4;
+  --me-theme-tab-selected-color: #00B0BE;
   /* MATERIAL_COLOR_GOOGLE_GREY_900 */
   --me-theme-container-background-color: #202124;
   --mdc-theme-primary: var(--me-theme-tab-selected-color);

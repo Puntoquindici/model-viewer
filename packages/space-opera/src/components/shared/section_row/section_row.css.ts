@@ -29,7 +29,7 @@ export const styles: CSSResult = css`:host {
 }
 
 .RowLabel {
-  font-size: 14px;
+  font-size: 12px;
   flex-direction: row;
   font-weight: 500;
   justify-content: space-between;
