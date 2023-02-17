@@ -88,6 +88,10 @@ export const hotspotEditorStyles: CSSResult = css`
   margin-bottom: 10px;
 }
 
+me-section-row {
+  margin-bottom: 10px;
+}
+
 textarea {
   outline: none;
   resize: vertical;
@@ -105,6 +109,35 @@ textarea {
   display: flex;
   flex-direction: row;
   justify-content: center;
+}
+
+input[type='radio'] {
+  width: 18px;
+  height: 20px;
+}
+
+input[type='radio']:after {
+  width: 15px;
+  height: 15px;
+  border-radius: 15px;
+  position: relative;
+  background-color: #fff;
+  content: '';
+  display: inline-block;
+  visibility: visible;
+  border: 2px solid white;
+}
+
+input[type='radio']:checked:after {
+  width: 15px;
+  height: 15px;
+  border-radius: 15px;
+  position: relative;
+  background-color: var(--color-cyan);
+  content: '';
+  display: inline-block;
+  visibility: visible;
+  border: 2px solid white;
 }
 `;
 
