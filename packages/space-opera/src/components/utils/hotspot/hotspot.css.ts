@@ -141,6 +141,7 @@ export const styles: CSSResult = css`
     display: flex !important;
     align-items: center;
     justify-content: center;
+    font-size: 14px;
   }
 
   .Hotspot > * {
