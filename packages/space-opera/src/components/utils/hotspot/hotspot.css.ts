@@ -137,6 +137,10 @@ export const styles: CSSResult = css`
     margin-bottom: 10px;
   }
 
+  a.HotspotAnnotationText.single {
+    margin-top: 0px !important;
+  }
+  
   a.HotspotAnnotationText {
     margin-left: 5px;
     margin-top: 16px !important;
