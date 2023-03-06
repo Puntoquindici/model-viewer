@@ -82,6 +82,7 @@ export function renderHotspot(config: HotspotConfig) {
 
       if(config.annotation) {
         const annotationText = document.createElement('p');
+        annotationTitle.classList.add('multi');
         annotationText.classList.add('HotspotAnnotationText');
         annotationText.textContent = config.annotation;
         annotationParent.appendChild(annotationText);

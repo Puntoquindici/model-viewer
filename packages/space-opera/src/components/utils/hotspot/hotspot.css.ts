@@ -63,8 +63,8 @@ export const styles: CSSResult = css`
     display: none;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: normal;
-    max-width: 128px;
-    padding: 1em 1.5em;
+    max-width: 200px;
+    padding: 20px;
     position: absolute;
     width: max-content;
     overflow-wrap: break-word;
@@ -130,6 +130,11 @@ export const styles: CSSResult = css`
   .HotspotAnnotationTitle {
     margin-top: 0;
     margin-bottom: 0;
+  }
+  
+  .HotspotAnnotationTitle.multi {
+    margin-top: 0;
+    margin-bottom: 10px;
   }
 
   a.HotspotAnnotationText {
