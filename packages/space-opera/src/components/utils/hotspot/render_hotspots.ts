@@ -50,9 +50,11 @@ export function renderHotspot(config: HotspotConfig) {
   }
   hotspotElement.dataset['visibilityAttribute'] = 'visible';
   hotspotElement.onmousedown = (e) => {
-    e.stopPropagation();
-    // toggle hotspot clicked
-    onHotspotClicked(hotspotElement);
+    if(e.target === hotspotElement) {
+      e.stopPropagation();
+      // toggle hotspot clicked
+      onHotspotClicked(hotspotElement);
+    }
   }
 
   if (config.annotation && !config.title) {
