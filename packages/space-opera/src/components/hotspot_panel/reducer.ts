@@ -122,6 +122,17 @@ export function dispatchUpdateHotspotMode(addHotspot: boolean) {
   return {type: UPDATE_HOTSPOT_MODE, payload: addHotspot};
 }
 
+export function dispatchRepositionHotspot(hotspot: HotspotConfig) {
+  return {type: UPDATE_HOTSPOT, payload: hotspot};
+}
+
+const REPOSITION_HOTPOST = 'REPOSITION_HOTPOST';
+export function dispatchSetRepositionHotspot(hotspot: HotspotConfig | null) {
+  return {type: REPOSITION_HOTPOST, payload: hotspot};
+}
+
+export const getRepositioningHotspot = (state: State) => state.ui.hotspots.repositioningHotspot;
+
 export const getHotspotMode = (state: State) => state.ui.hotspots.addHotspot;
 
 export function hotspotsUiReducer(
@@ -133,6 +144,10 @@ export function hotspotsUiReducer(
     case UPDATE_HOTSPOT_MODE:
       return {
         ...state, addHotspot: action.payload
+      }
+    case REPOSITION_HOTPOST:
+      return {
+        ...state, repositioningHotspot: action.payload
       }
     default:
       return state;

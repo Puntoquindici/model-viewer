@@ -34,7 +34,15 @@ import {arButtonCSS, progressBarCSS} from '../best_practices/styles.css.js';
 import {dispatchCameraIsDirty} from '../camera_settings/reducer.js';
 import {dispatchAutoplayEnabled, dispatchCameraControlsEnabled, dispatchConfig, dispatchEnvrionmentImage, getConfig} from '../config/reducer.js';
 import {ConnectedLitElement} from '../connected_lit_element/connected_lit_element.js';
-import {dispatchAddHotspot, dispatchSetHotspots, dispatchUpdateHotspotMode, generateUniqueHotspotName, getHotspotMode, getHotspots} from '../hotspot_panel/reducer.js';
+import {
+  dispatchAddHotspot,
+  dispatchRepositionHotspot,
+  dispatchSetHotspots,
+  dispatchUpdateHotspotMode,
+  generateUniqueHotspotName,
+  getHotspotMode,
+  getHotspots
+} from '../hotspot_panel/reducer.js';
 import {HotspotConfig} from '../hotspot_panel/types.js';
 import {createBlobUrlFromEnvironmentImage, dispatchAddEnvironmentImage} from '../ibl_selector/reducer.js';
 import {dispatchSetForcePost, getRefreshable} from '../mobile_view/reducer.js';
@@ -45,6 +53,7 @@ import {styles as hotspotStyles} from '../utils/hotspot/hotspot.css.js';
 import {renderModelViewer} from '../utils/render_model_viewer.js';
 
 import {dispatchGltfUrl, dispatchModel, getGltfUrl, renderCommonChildElements} from './reducer.js';
+import {dispatchSetRepositionHotspot, getRepositioningHotspot} from '../hotspot_panel/reducer';
 
 /**
  * Renders and updates the model-viewer tag, serving as a preview of the edits.
@@ -57,6 +66,7 @@ export class ModelViewerPreview extends ConnectedLitElement {
   @state() config: ModelViewerConfig = {};
   @state() hotspots: HotspotConfig[] = [];
   @state() addHotspotMode = false;
+  @state() repositioningHotspot: HotspotConfig | null = null;
   @state() gltfUrl?: string;
   @state() extraAttributes: any = {};
   @state() refreshButtonIsReady: boolean = false;
@@ -71,6 +81,7 @@ export class ModelViewerPreview extends ConnectedLitElement {
 
   stateChanged(state: State) {
     this.addHotspotMode = getHotspotMode(state) || false;
+    this.repositioningHotspot = getRepositioningHotspot(state) || null;
     this.config = getConfig(state);
     this.hotspots = getHotspots(state);
     this.extraAttributes = getExtraAttributes(state);
@@ -148,8 +159,11 @@ export class ModelViewerPreview extends ConnectedLitElement {
                 this.onCameraChange();
               },
               click: (event: MouseEvent) => {
-                if (this.addHotspotMode) {
+                if (this.addHotspotMode && !this.repositioningHotspot) {
                   this.addHotspot(event);
+                }
+                if(this.repositioningHotspot && this.addHotspotMode) {
+                  this.repositionHotpost(event);
                 }
               },
               error: (error: CustomEvent) => {
@@ -172,6 +186,24 @@ export class ModelViewerPreview extends ConnectedLitElement {
 
   private onCameraChange() {
     reduxStore.dispatch(dispatchCameraIsDirty());
+  }
+
+  private repositionHotpost(event: MouseEvent) {
+    const positionAndNormal = this.modelViewer.positionAndNormalFromPoint(
+      event.clientX, event.clientY);
+    if (!positionAndNormal) {
+      console.log('Click was not on model, no hotspot added.');
+      return;
+    }
+    if(this.repositioningHotspot != null) {
+      reduxStore.dispatch(dispatchRepositionHotspot({
+        ...this.repositioningHotspot!,
+        position: positionAndNormal.position,
+        normal: positionAndNormal.normal
+      }));
+      reduxStore.dispatch(dispatchUpdateHotspotMode(false));
+      reduxStore.dispatch(dispatchSetRepositionHotspot(null));
+    }
   }
 
   private addHotspot(event: MouseEvent) {

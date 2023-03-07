@@ -21,6 +21,7 @@ import {HotspotConfig} from './components/hotspot_panel/types.js';
 import {EnvironmentImage, INITIAL_ENVIRONMENT_IMAGES} from './components/ibl_selector/types.js';
 import {MobileState} from './components/mobile_view/types.js';
 import {ModelState} from './components/model_viewer_preview/types.js';
+import {Hotspot} from '@google/model-viewer/lib/three-components/Hotspot';
 
 export interface ModelViewerConfig {
   animationName?: string;
@@ -58,6 +59,7 @@ export interface PosterConfig {
 
 interface HotspotsUIState {
   addHotspot: boolean;
+  repositioningHotspot?: Hotspot | null;
 }
 
 interface UIState {
