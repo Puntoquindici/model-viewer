@@ -31,7 +31,7 @@ const GENERATED_SIGMA = 0.04;
 // samples and exit early, but not recompile the shader.
 const MAX_SAMPLES = 20;
 
-const HDR_FILE_RE = /\.hdr(\.js)?$/;
+const HDR_FILE_RE = /\.hdr(\.js)?$/i;
 const ldrLoader = new TextureLoader();
 const hdrLoader = new RGBELoader();
 hdrLoader.setDataType(HalfFloatType);
