@@ -53,7 +53,8 @@ export default class TextureUtils extends EventDispatcher {
       url: string, progressCallback: (progress: number) => void = () => {}):
       Promise<Texture> {
     try {
-      const isHDR: boolean = HDR_FILE_RE.test(url);
+      let url_data = new URL(url);
+      const isHDR: boolean = HDR_FILE_RE.test(url_data.pathname);
       const loader = isHDR ? hdrLoader : ldrLoader;
       const texture: Texture = await new Promise<Texture>(
           (resolve, reject) => loader.load(
