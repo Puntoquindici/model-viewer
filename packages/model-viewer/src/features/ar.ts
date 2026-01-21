@@ -15,8 +15,8 @@
 
 import {property} from 'lit/decorators.js';
 import {Event as ThreeEvent} from 'three';
-import {USDZExporter} from 'three/examples/jsm/exporters/USDZExporter.js';
-
+// import {USDZExporter} from 'three/examples/jsm/exporters/USDZExporter.js';
+import {PatchedUSDZExporter} from '../three-components/PatchedUSDZExporter.js';
 import {IS_AR_QUICKLOOK_CANDIDATE, IS_SCENEVIEWER_CANDIDATE, IS_WEBXR_AR_CANDIDATE} from '../constants.js';
 import ModelViewerElementBase, {$needsRender, $progressTracker, $renderer, $scene, $shouldAttemptPreload, $updateSource} from '../model-viewer-base.js';
 import {enumerationDeserializer} from '../styles/deserializers.js';
@@ -431,8 +431,10 @@ configuration or device capabilities');
 
       updateSourceProgress(0.2);
 
-      const exporter = new USDZExporter();
+      const exporter = new PatchedUSDZExporter();
+      // const exporter = new USDZExporter();
       const arraybuffer = await exporter.parse(model);
+      // await exporter.parse(model);
       const blob = new Blob([arraybuffer], {
         type: 'model/vnd.usdz+zip',
       });

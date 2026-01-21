@@ -23,5 +23,7 @@
   "include": [
     "./src/**/*.ts"
   ],
-  "exclude": []
+  "exclude": [
+    "./src/three-components/fflate.module.js"
+  ]
 }

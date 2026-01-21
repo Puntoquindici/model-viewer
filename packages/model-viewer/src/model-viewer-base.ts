@@ -225,7 +225,7 @@ export default class ModelViewerElementBase extends ReactiveElement {
    */
   constructor() {
     super();
-
+    console.log('MyARStudio Viewer');
     this.attachShadow({mode: 'open'});
 
     const shadowRoot = this.shadowRoot!;
