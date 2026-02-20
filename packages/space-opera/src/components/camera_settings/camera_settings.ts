@@ -46,11 +46,13 @@ class CameraOrbitEditor extends ConnectedLitElement {
 
   @query('me-draggable-input#yaw') yawInput!: DraggableInput;
   @query('me-draggable-input#pitch') pitchInput!: DraggableInput;
+  @query('me-draggable-input#radius') radiusInput!: DraggableInput;
 
   get currentOrbit() {
     return {
       phi: degToRad(this.pitchInput.value),
       theta: degToRad(this.yawInput.value),
+      radius: checkFinite(Number(this.radiusInput.value)),
     };
   }
 
@@ -60,8 +62,8 @@ class CameraOrbitEditor extends ConnectedLitElement {
 
   render() {
     return html`
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
       <div style="justify-content: space-between; width: 100%; display: flex;">
-        <div>
           <me-draggable-input
             id="yaw"
             innerLabel="yaw"
@@ -76,8 +78,16 @@ class CameraOrbitEditor extends ConnectedLitElement {
             style="min-width: 90px; max-width: 90px;"
             @change=${this.onChange}>
           </me-draggable-input>
-        </div>
       </div>
+      <me-draggable-input
+        id="radius"
+        innerLabel="radius"
+        min=0.01 max=9999
+        dragStepSize=0.01
+        style="min-width: 90px; max-width: 90px; margin-left:0px;"
+        @change=${this.onChange}>
+      </me-draggable-input>
+    </div>
 `;
   }
 }
@@ -164,6 +174,7 @@ export class CameraSettings extends ConnectedLitElement {
   }
 
   async updateInitialCamera() {
+    console.log('updateInitialCamera');
     const modelViewer = await getUpdatedModelViewer();
     this.cameraTargetInput.target = modelViewer.getCameraTarget();
     if (this.config.cameraOrbit == null) {
@@ -172,6 +183,7 @@ export class CameraSettings extends ConnectedLitElement {
       const currentOrbit = modelViewer.getCameraOrbit();
       this.cameraOrbitEditor.yawInput.value = radToDeg(currentOrbit.theta);
       this.cameraOrbitEditor.pitchInput.value = radToDeg(currentOrbit.phi);
+      this.cameraOrbitEditor.radiusInput.value = currentOrbit.radius;
       this.cameraOrbitEditor.style.display = '';
     }
   }

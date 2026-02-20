@@ -53,9 +53,17 @@ function getUpdatedLimits(
   };
 }
 
-export function getOrbitString(orbit: {theta: number, phi: number}) {
+export function getOrbitString(orbit: {
+  theta: number,
+  phi: number,
+  radius?: number
+}) {
+  const radiusPart =
+      orbit.radius != null
+          ? `${roundToDigits(orbit.radius, DIGITS)}m`
+          : 'auto';
   return `${roundToDigits(radToDeg(orbit.theta), DIGITS)}deg ${
-      roundToDigits(radToDeg(orbit.phi), DIGITS)}deg auto`;
+      roundToDigits(radToDeg(orbit.phi), DIGITS)}deg ${radiusPart}`;
 }
 
 const SET_CAMERA_CONTROLS_ENABLED = 'SET_CAMERA_CONTROLS_ENABLED';
@@ -144,8 +152,11 @@ export function dispatchSetMinZoom(fovDeg?: number, radius?: number) {
 }
 
 const SAVE_CAMERA_ORBIT = 'SAVE_CAMERA_ORBIT';
-export function dispatchSaveCameraOrbit(orbit: {theta: number, phi: number}|
-                                        undefined) {
+export function dispatchSaveCameraOrbit(orbit: {
+  theta: number,
+  phi: number,
+  radius?: number
+}| undefined) {
   return {type: SAVE_CAMERA_ORBIT, payload: orbit};
 }
 
