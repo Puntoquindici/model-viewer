@@ -67,6 +67,20 @@ function removeHotspot(state: HotspotConfig[], name: string) {
   return hotspots;
 }
 
+function reorderHotspot(
+    state: HotspotConfig[], name: string,
+    direction: 'up' | 'down'): HotspotConfig[] {
+  const index = findHotspotIndex(state, name);
+  const swapIndex =
+      direction === 'up' ? index - 1 : index + 1;
+  if (swapIndex < 0 || swapIndex >= state.length) {
+    return state;
+  }
+  const next = [...state];
+  [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+  return next;
+}
+
 const SET_HOTSPOTS = 'SET_HOTSPOTS';
 export function dispatchSetHotspots(hotspots: HotspotConfig[]) {
   hotspotNameSet = new Set(hotspots.map(hotspot => hotspot.name));
@@ -96,6 +110,11 @@ export function dispatchAddHotspot(config?: HotspotConfig) {
   return {type: ADD_HOTSPOT, payload: config};
 }
 
+const REORDER_HOTSPOT = 'REORDER_HOTSPOT';
+export function dispatchReorderHotspot(name: string, direction: 'up' | 'down') {
+  return {type: REORDER_HOTSPOT, payload: {name, direction}};
+}
+
 export const getHotspots = (state: State) =>
     state.entities.modelViewerSnippet.hotspots;
 
@@ -112,6 +131,9 @@ export function hotspotsReducer(
       return updateHotspot(state, action.payload);
     case ADD_HOTSPOT:
       return addHotspot(state, action.payload);
+    case REORDER_HOTSPOT:
+      return reorderHotspot(
+          state, action.payload.name, action.payload.direction);
     default:
       return state;
   }
