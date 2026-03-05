@@ -17,18 +17,52 @@
 
 import {HotspotConfig} from '../../hotspot_panel/types.js';
 
+/** Cache keyed by hotspot name so we reuse DOM elements on reorder and avoid
+ *  model-viewer seeing remove+add (which could mis-associate slot with position/normal).
+ */
+const hotspotElementCache = new Map<string, {element: HTMLElement; config: HotspotConfig}>();
+
+function configEquals(a: HotspotConfig, b: HotspotConfig): boolean {
+  if (a.name !== b.name) return false;
+  if (a.position?.toString() !== b.position?.toString()) return false;
+  if ((a.normal?.toString() ?? '') !== (b.normal?.toString() ?? '')) return false;
+  if (a.annotation !== b.annotation) return false;
+  if (a.title !== b.title) return false;
+  if (a.link !== b.link) return false;
+  if (a.linkLabel !== b.linkLabel) return false;
+  if (a.defaultOpen !== b.defaultOpen) return false;
+  if (a.align !== b.align) return false;
+  return true;
+}
+
 /**
- * Renders a list of hotspots
+ * Renders a list of hotspots. Reuses cached DOM elements by name so that
+ * reordering in the panel does not replace nodes (avoids wrong position/normal
+ * and closed state in the 3D view). Returns elements in stable (name) order.
  */
 export function renderHotspots(hotspots: HotspotConfig[]) {
-  const existingNames = new Set();
+  const existingNames = new Set<string>();
   for (const hotspot of hotspots) {
     if (existingNames.has(hotspot.name)) {
       throw new Error(`Hotspot contains duplicate name: ${hotspot.name}`);
     }
     existingNames.add(hotspot.name);
   }
-  return hotspots.map(hotspot => renderHotspot(hotspot));
+  // Drop cache entries for removed hotspots
+  for (const name of hotspotElementCache.keys()) {
+    if (!existingNames.has(name)) hotspotElementCache.delete(name);
+  }
+  // Stable order by name so DOM child order does not change on reorder
+  const sorted = hotspots.slice().sort((a, b) => a.name.localeCompare(b.name));
+  return sorted.map((hotspot) => {
+    const cached = hotspotElementCache.get(hotspot.name);
+    if (cached && configEquals(cached.config, hotspot)) {
+      return cached.element;
+    }
+    const element = renderHotspot(hotspot);
+    hotspotElementCache.set(hotspot.name, {element, config: {...hotspot}});
+    return element;
+  });
 }
 
 /**
