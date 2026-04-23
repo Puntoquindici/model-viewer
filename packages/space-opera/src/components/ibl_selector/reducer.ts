@@ -28,7 +28,7 @@ export async function createBlobUrlFromEnvironmentImage(file: File) {
   const arrayBuffer = await file.arrayBuffer();
   const safeObjectUrl = createSafeObjectUrlFromArrayBuffer(arrayBuffer);
   const unsafeUrl = file.name.match(/\.(hdr)$/i) ?
-      safeObjectUrl.unsafeUrl + '#.hdr' :
+      safeObjectUrl.unsafeUrl + '#' + file.name :
       safeObjectUrl.unsafeUrl;
   return unsafeUrl;
 }

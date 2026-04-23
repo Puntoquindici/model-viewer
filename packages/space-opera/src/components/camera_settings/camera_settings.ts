@@ -49,11 +49,22 @@ class CameraOrbitEditor extends ConnectedLitElement {
   @query('me-draggable-input#radius') radiusInput!: DraggableInput;
 
   get currentOrbit() {
-    return {
-      phi: degToRad(this.pitchInput.value),
-      theta: degToRad(this.yawInput.value),
-      radius: checkFinite(Number(this.radiusInput.value)),
-    };
+    try {
+      return {
+        phi: degToRad(this.pitchInput.value),
+        theta: degToRad(this.yawInput.value),
+        radius: checkFinite(Number(this.radiusInput.value)),
+      };
+    } catch (error) {
+      console.error('Error getting current orbit', error);
+      const modelViewer = getModelViewer();
+      const idealCameraDistance = modelViewer.idealCameraDistance();
+      return {
+        phi: degToRad(this.pitchInput.value),
+        theta: degToRad(this.yawInput.value),
+        radius: idealCameraDistance
+      };
+    }
   }
 
   private onChange() {
@@ -174,7 +185,6 @@ export class CameraSettings extends ConnectedLitElement {
   }
 
   async updateInitialCamera() {
-    console.log('updateInitialCamera');
     const modelViewer = await getUpdatedModelViewer();
     this.cameraTargetInput.target = modelViewer.getCameraTarget();
     if (this.config.cameraOrbit == null) {

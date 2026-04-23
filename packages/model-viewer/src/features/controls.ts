@@ -383,8 +383,6 @@ export const ControlsMixin = <T extends Constructor<ModelViewerElementBase>>(
     }
 
     getCameraOrbit(): SphericalPosition {
-      // Always read current spherical from controls so radius (and theta/phi)
-      // are correct even before any 'change' event has run.
       const {theta, phi, radius} =
           this[$controls].getCameraSpherical(this[$lastSpherical]);
       return {

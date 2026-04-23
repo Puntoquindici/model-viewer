@@ -288,7 +288,7 @@ canvas {
   align-items: center;
   justify-content: center;
   position: absolute;
-  top: env(safe-area-inset-top, 16px);
+  top: 25px;
   right: 16px;
   width: 40px;
   height: 40px;

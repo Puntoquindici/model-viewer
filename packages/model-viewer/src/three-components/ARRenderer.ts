@@ -114,6 +114,9 @@ export class ARRenderer extends EventDispatcher {
   private zDamper = new Damper();
   private yawDamper = new Damper();
   private scaleDamper = new Damper();
+  private hasLoggedViewportSource = false;
+  private hasLoggedMissingViewport = false;
+  private hasLoggedInitialPlacement = false;
 
   private onExitWebXRButtonContainerClick = () => this.stopPresenting();
 
@@ -128,10 +131,16 @@ export class ARRenderer extends EventDispatcher {
 
     const session: XRSession =
         await navigator.xr!.requestSession!('immersive-ar', {
-          requiredFeatures: ['hit-test'],
-          optionalFeatures: ['dom-overlay', 'light-estimation'],
+          // requiredFeatures: ['hit-test'],
+          optionalFeatures: ['hit-test', 'dom-overlay', 'light-estimation'],
           domOverlay: this.overlay ? {root: this.overlay} : undefined
+        }).catch(e => {
+          console.error('Error while trying to request WebXR AR session');
+          console.error(e);
+          throw e;
         });
+
+    console.log('session', session);
 
     this.threeRenderer.xr.setReferenceSpaceType('local');
 
@@ -219,6 +228,9 @@ export class ARRenderer extends EventDispatcher {
     this.tracking = true;
     this.frames = 0;
     this.initialized = false;
+    this.hasLoggedViewportSource = false;
+    this.hasLoggedMissingViewport = false;
+    this.hasLoggedInitialPlacement = false;
 
     this.turntableRotation = scene.yaw;
     this.goalYaw = scene.yaw;
@@ -411,6 +423,7 @@ export class ARRenderer extends EventDispatcher {
     if (!this.initialized) {
       this.placeInitially();
       this.initialized = true;
+      console.log('placed model and initialized ARRenderer');
     }
 
     // Use automatic dynamic viewport scaling if supported.
@@ -418,10 +431,57 @@ export class ARRenderer extends EventDispatcher {
       const scale = view.recommendedViewportScale;
       view.requestViewportScale(Math.max(scale, MIN_VIEWPORT_SCALE));
     }
-    const layer = this.currentSession!.renderState.baseLayer;
-    const viewport = layer!.getViewport(view)!;
-    this.threeRenderer.setViewport(
-        viewport.x, viewport.y, viewport.width, viewport.height);
+    const viewport = this.getViewport(view);
+    if (viewport != null) {
+      this.threeRenderer.setViewport(
+          viewport.x, viewport.y, viewport.width, viewport.height);
+    } else if (!this.hasLoggedMissingViewport) {
+      this.hasLoggedMissingViewport = true;
+      console.warn(
+          '[model-viewer][AR] No XR viewport resolved; rendering with default viewport');
+    }
+  }
+
+  /**
+   * Chrome may expose only renderState.layers (with baseLayer null).
+   * Resolve viewport across both legacy and layers-based APIs.
+   */
+  private getViewport(view: XRView): XRViewport|null {
+    const session = this.currentSession;
+    if (session == null) {
+      return null;
+    }
+
+    const renderState = session.renderState as any;
+    const baseLayer = renderState.baseLayer as XRWebGLLayer|null;
+
+    if (baseLayer != null && typeof baseLayer.getViewport === 'function') {
+      if (!this.hasLoggedViewportSource) {
+        this.hasLoggedViewportSource = true;
+        console.info('[model-viewer][AR] XR viewport source: renderState.baseLayer');
+      }
+      return baseLayer.getViewport(view) ?? null;
+    }
+
+    const xr = this.threeRenderer.xr as any;
+    const layer = renderState.layers?.[0] ?? xr.getBaseLayer?.();
+    const binding = xr.getBinding?.();
+    if (layer != null && binding != null &&
+        typeof binding.getViewSubImage === 'function') {
+      if (!this.hasLoggedViewportSource) {
+        this.hasLoggedViewportSource = true;
+        console.info(
+            '[model-viewer][AR] XR viewport source: renderState.layers/getViewSubImage',
+            {
+              hasBaseLayer: baseLayer != null,
+              hasLayers: Array.isArray(renderState.layers),
+              layerCount: renderState.layers?.length ?? 0
+            });
+      }
+      return binding.getViewSubImage(layer, view)?.viewport ?? null;
+    }
+
+    return null;
   }
 
   private placeInitially() {
@@ -437,19 +497,40 @@ export class ARRenderer extends EventDispatcher {
     const {theta, radius} =
         (element as ModelViewerElementBase & ControlsInterface)
             .getCameraOrbit();
+    const orbitRadius =
+        isFinite(radius) && radius > 0 ? radius : scene.idealCameraDistance();
+    if (!this.hasLoggedInitialPlacement) {
+      this.hasLoggedInitialPlacement = true;
+      console.info('[model-viewer][AR] Initial placement inputs', {
+        theta,
+        requestedRadius: radius,
+        usedRadius: orbitRadius,
+        fallbackRadiusUsed: orbitRadius !== radius,
+        idealCameraDistance: scene.idealCameraDistance()
+      });
+    }
     // Orient model to match the 3D camera view
     const cameraDirection = xrCamera.getWorldDirection(vector3);
     scene.yaw = Math.atan2(-cameraDirection.x, -cameraDirection.z) - theta;
     this.goalYaw = scene.yaw;
 
     position.copy(xrCamera.position)
-        .add(cameraDirection.multiplyScalar(radius));
+        .add(cameraDirection.multiplyScalar(orbitRadius));
 
     this.updateTarget();
     const target = scene.getTarget();
     position.add(target).sub(this.oldTarget);
 
     this.goalPosition.copy(position);
+    console.info('[model-viewer][AR] Initial placement result', {
+      cameraPosition: {
+        x: xrCamera.position.x,
+        y: xrCamera.position.y,
+        z: xrCamera.position.z
+      },
+      goalPosition: {x: position.x, y: position.y, z: position.z},
+      yaw: this.goalYaw
+    });
 
     scene.setHotspotsVisibility(true);
 
