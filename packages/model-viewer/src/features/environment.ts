@@ -22,7 +22,13 @@ import {clamp, Constructor, deserializeUrl} from '../utilities.js';
 export const BASE_OPACITY = 0.5;
 const DEFAULT_SHADOW_INTENSITY = 0.0;
 const DEFAULT_SHADOW_SOFTNESS = 1.0;
+const DEFAULT_DIRECTIONAL_SHADOW_RADIUS = 10;
+const DEFAULT_DIRECTIONAL_SHADOW_SAMPLES = 8;
+const DEFAULT_DIRECTIONAL_LIGHT_INTENSITY = 2.0;
+const DEFAULT_DIRECTIONAL_LIGHT_COLOR = '#ffffff';
 const DEFAULT_EXPOSURE = 1.0;
+const DEFAULT_DIRECTIONAL_LIGHT_AZIMUTH_OFFSET = 0;
+const DEFAULT_DIRECTIONAL_LIGHT_ELEVATION_OFFSET = Math.PI / 12;
 
 export const $currentEnvironmentMap = Symbol('currentEnvironmentMap');
 export const $currentBackground = Symbol('currentBackground');
@@ -34,6 +40,13 @@ export declare interface EnvironmentInterface {
   skyboxImage: string|null;
   shadowIntensity: number;
   shadowSoftness: number;
+  directionalShadowRadius: number;
+  directionalShadowSamples: number;
+  directionalLight: boolean;
+  directionalLightIntensity: number;
+  directionalLightColor: string;
+  directionalLightAzimuthOffset: number;
+  directionalLightElevationOffset: number;
   exposure: number;
   hasBakedShadow(): boolean;
 }
@@ -52,6 +65,29 @@ export const EnvironmentMixin = <T extends Constructor<ModelViewerElementBase>>(
 
     @property({type: Number, attribute: 'shadow-softness'})
     shadowSoftness: number = DEFAULT_SHADOW_SOFTNESS;
+
+    @property({type: Number, attribute: 'directional-shadow-radius'})
+    directionalShadowRadius: number = DEFAULT_DIRECTIONAL_SHADOW_RADIUS;
+
+    @property({type: Number, attribute: 'directional-shadow-samples'})
+    directionalShadowSamples: number = DEFAULT_DIRECTIONAL_SHADOW_SAMPLES;
+
+    @property({type: Boolean, attribute: 'directional-light'})
+    directionalLight: boolean = false;
+
+    @property({type: Number, attribute: 'directional-light-intensity'})
+    directionalLightIntensity: number = DEFAULT_DIRECTIONAL_LIGHT_INTENSITY;
+
+    @property({type: String, attribute: 'directional-light-color'})
+    directionalLightColor: string = DEFAULT_DIRECTIONAL_LIGHT_COLOR;
+
+    @property({type: Number, attribute: 'directional-light-azimuth-offset'})
+    directionalLightAzimuthOffset: number =
+        DEFAULT_DIRECTIONAL_LIGHT_AZIMUTH_OFFSET;
+
+    @property({type: Number, attribute: 'directional-light-elevation-offset'})
+    directionalLightElevationOffset: number =
+        DEFAULT_DIRECTIONAL_LIGHT_ELEVATION_OFFSET;
 
     @property({
       type: Number,
@@ -74,6 +110,35 @@ export const EnvironmentMixin = <T extends Constructor<ModelViewerElementBase>>(
       if (changedProperties.has('shadowSoftness')) {
         this[$scene].setShadowSoftness(this.shadowSoftness);
         this[$needsRender]();
+      }
+
+      if (changedProperties.has('directionalShadowRadius')) {
+        this[$scene].setDirectionalShadowRadius(this.directionalShadowRadius);
+        this[$needsRender]();
+      }
+
+      if (changedProperties.has('directionalShadowSamples')) {
+        this[$scene].setDirectionalShadowSamples(this.directionalShadowSamples);
+        this[$needsRender]();
+      }
+
+      if (changedProperties.has('directionalLight') ||
+          changedProperties.has('directionalLightIntensity') ||
+          changedProperties.has('directionalLightColor')) {
+        this[$scene].setDirectionalLightEnabled(this.directionalLight);
+        this[$scene].setDirectionalLightIntensity(this.directionalLightIntensity);
+        this[$scene].setDirectionalLightColor(this.directionalLightColor);
+        this[$needsRender]();
+      }
+
+      if (changedProperties.has('directionalLightAzimuthOffset')) {
+        this[$scene].setDirectionalLightAzimuthOffset(
+            this.directionalLightAzimuthOffset);
+      }
+
+      if (changedProperties.has('directionalLightElevationOffset')) {
+        this[$scene].setDirectionalLightElevationOffset(
+            this.directionalLightElevationOffset);
       }
 
       if (changedProperties.has('exposure')) {

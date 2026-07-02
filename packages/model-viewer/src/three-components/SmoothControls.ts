@@ -496,6 +496,7 @@ export class SmoothControls extends EventDispatcher {
       this.camera.updateProjectionMatrix();
     }
 
+    this.scene.updateDirectionalLightFromCamera();
     this.dispatchChange();
   }
 

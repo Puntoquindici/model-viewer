@@ -65,6 +65,7 @@ export class ModelViewerGLTFInstance extends GLTFInstance {
       if (mesh.isMesh) {
         const {geometry} = mesh;
         mesh.castShadow = true;
+        mesh.receiveShadow = true;
         if ((mesh as any).isSkinnedMesh) {
           // Akin to disabling frustum culling above, we have to also manually
           // disable the bounds to make raycasting correct for skinned meshes.
@@ -73,7 +74,7 @@ export class ModelViewerGLTFInstance extends GLTFInstance {
           // are not updated with animation.
           geometry.boundingBox = null;
         }
-
+        
         const material = mesh.material as MeshStandardMaterial;
         if ((material as any).isMeshBasicMaterial === true) {
           material.toneMapped = false;

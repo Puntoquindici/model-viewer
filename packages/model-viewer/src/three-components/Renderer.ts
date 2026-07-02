@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {ACESFilmicToneMapping, Event, EventDispatcher, sRGBEncoding, Vector2, WebGLRenderer} from 'three';
+import {ACESFilmicToneMapping, Event, EventDispatcher, PCFShadowMap, sRGBEncoding, Vector2, WebGLRenderer} from 'three';
 
 import {$updateEnvironment} from '../features/environment.js';
 import {ModelViewerGlobalConfig} from '../features/loading.js';
@@ -101,6 +101,7 @@ export class Renderer extends EventDispatcher {
 
   protected debugger: Debugger|null = null;
   private scenes: Set<ModelScene> = new Set();
+  private scenesWithDirectionalShadow: Set<ModelScene> = new Set();
   private multipleScenesVisible = false;
   private lastTick = performance.now();
   private renderedLastFrame = false;
@@ -149,6 +150,8 @@ export class Renderer extends EventDispatcher {
       this.threeRenderer.autoClear = true;
       this.threeRenderer.outputEncoding = sRGBEncoding;
       this.threeRenderer.physicallyCorrectLights = true;
+      this.threeRenderer.shadowMap.enabled = false;
+      this.threeRenderer.shadowMap.type = PCFShadowMap;
       this.threeRenderer.setPixelRatio(1);  // handle pixel ratio externally
 
       this.debugger = !!options.debug ? new Debugger(this) : null;
@@ -195,6 +198,9 @@ export class Renderer extends EventDispatcher {
 
   unregisterScene(scene: ModelScene) {
     this.scenes.delete(scene);
+    this.scenesWithDirectionalShadow.delete(scene);
+    this.threeRenderer.shadowMap.enabled =
+        this.scenesWithDirectionalShadow.size > 0;
 
     if (this.canvas3D.parentElement === scene.canvas.parentElement) {
       scene.canvas.parentElement!.removeChild(this.canvas3D);
@@ -207,6 +213,16 @@ export class Renderer extends EventDispatcher {
     if (this.debugger != null) {
       this.debugger.removeScene(scene);
     }
+  }
+
+  setSceneDirectionalShadow(scene: ModelScene, enabled: boolean) {
+    if (enabled) {
+      this.scenesWithDirectionalShadow.add(scene);
+    } else {
+      this.scenesWithDirectionalShadow.delete(scene);
+    }
+    this.threeRenderer.shadowMap.enabled =
+        this.scenesWithDirectionalShadow.size > 0;
   }
 
   displayCanvas(scene: ModelScene): HTMLCanvasElement {

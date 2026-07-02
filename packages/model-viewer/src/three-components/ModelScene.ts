@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {AnimationAction, AnimationClip, AnimationMixer, Box3, Camera, Euler, Event as ThreeEvent, LoopPingPong, LoopRepeat, Material, Matrix3, Mesh, Object3D, PerspectiveCamera, Raycaster, Scene, Sphere, Texture, Vector2, Vector3, WebGLRenderer} from 'three';
+import {AnimationAction, AnimationClip, AnimationMixer, Box3, Camera, DirectionalLight, Euler, Event as ThreeEvent, LoopPingPong, LoopRepeat, Material, Matrix3, Mesh, Object3D, PerspectiveCamera, Raycaster, Scene, Sphere, Texture, Vector2, Vector3, WebGLRenderer} from 'three';
 import {CSS2DRenderer} from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 import {$currentGLTF, $model, $originalGltfJson} from '../features/scene-graph.js';
@@ -91,7 +91,10 @@ export class ModelScene extends Scene {
   public shadow: Shadow|null = null;
   public shadowIntensity = 0;
   public shadowSoftness = 1;
+  public directionalLight!: DirectionalLight;
   public bakedShadows = new Set<Mesh>();
+  public directionalLightAzimuthOffset = 0;
+  public directionalLightElevationOffset = Math.PI / 12;
 
   public exposure = 1;
   public canScale = true;
@@ -124,6 +127,16 @@ export class ModelScene extends Scene {
     this.camera.name = 'MainCamera';
 
     this.add(this.target);
+
+    this.directionalLight = new DirectionalLight(0xffffff, 2.0);
+    this.directionalLight.visible = false;
+    this.directionalLight.castShadow = false;
+    this.directionalLight.shadow.mapSize.width = 4096;
+    this.directionalLight.shadow.mapSize.height = 4096;
+    this.directionalLight.shadow.camera.near = 0.01;
+    this.directionalLight.shadow.camera.far = 100;
+    this.add(this.directionalLight);
+    this.add(this.directionalLight.target);
 
     this.setSize(width, height);
 
@@ -268,6 +281,19 @@ export class ModelScene extends Scene {
 
     await this.updateFraming();
 
+    // updateFraming() sets boundingSphere.radius — use it now
+    const r = this.boundingSphere.radius;
+    const dl = this.directionalLight;
+    dl.shadow.camera.left = -r * 1.2;
+    dl.shadow.camera.right = r * 1.2;
+    dl.shadow.camera.top = r * 1.2;
+    dl.shadow.camera.bottom = -r * 1.2;
+    dl.shadow.camera.far = r * 10;
+    dl.shadow.camera.updateProjectionMatrix();
+    dl.shadow.bias = -0.001;
+    dl.shadow.radius = 10;
+    this.updateDirectionalLightFromCamera();
+
     this.updateShadow();
     this.setShadowIntensity(this.shadowIntensity);
   }
@@ -307,6 +333,7 @@ export class ModelScene extends Scene {
       this.shadow.dispose();
       this.shadow = null;
     }
+    this.element[$renderer].setSceneDirectionalShadow(this, false);
     (this.element as any)[$currentGLTF] = null;
     (this.element as any)[$originalGltfJson] = null;
     (this.element as any)[$model] = null;
@@ -604,11 +631,38 @@ export class ModelScene extends Scene {
    */
   set yaw(radiansY: number) {
     this.rotation.y = radiansY;
+    this.updateDirectionalLightFromCamera();
     this.queueRender();
   }
 
   get yaw(): number {
     return this.rotation.y;
+  }
+
+  /**
+   * Repositions the directional light so it tracks the camera's azimuth and
+   * elevation with a fixed angular offset. Call whenever camera pose or scene
+   * yaw changes.
+   */
+  updateDirectionalLightFromCamera() {
+    const r = this.boundingSphere.radius;
+    if (r <= 0) return;
+    const camPos = this.camera.position;
+    const camTheta = Math.atan2(camPos.x, camPos.z);
+    const elevation = Math.atan2(camPos.y, Math.hypot(camPos.x, camPos.z)) +
+        this.directionalLightElevationOffset;
+    const dist = r * 3;
+    const theta = camTheta + this.directionalLightAzimuthOffset;
+    // Desired world-space light position
+    const wx = Math.sin(theta) * dist * Math.cos(elevation);
+    const wy = Math.sin(elevation) * dist;
+    const wz = Math.cos(theta) * dist * Math.cos(elevation);
+    // Convert to scene-local space (scene rotated by yaw around Y)
+    const yaw = this.rotation.y;
+    this.directionalLight.position.set(
+        wx * Math.cos(yaw) - wz * Math.sin(yaw),
+        wy,
+        wx * Math.sin(yaw) + wz * Math.cos(yaw));
   }
 
   set animationTime(value: number) {
@@ -793,6 +847,40 @@ export class ModelScene extends Scene {
     if (shadow != null) {
       shadow.setSoftness(softness);
     }
+  }
+
+  setDirectionalShadowRadius(radius: number) {
+    this.directionalLight.shadow.radius = radius;
+  }
+
+  setDirectionalShadowSamples(samples: number) {
+    this.directionalLight.shadow.blurSamples = samples;
+  }
+
+  setDirectionalLightEnabled(enabled: boolean) {
+    this.directionalLight.visible = enabled;
+    this.directionalLight.castShadow = enabled;
+    this.element[$renderer].setSceneDirectionalShadow(this, enabled);
+  }
+
+  setDirectionalLightIntensity(intensity: number) {
+    this.directionalLight.intensity = intensity;
+  }
+
+  setDirectionalLightColor(hex: string) {
+    this.directionalLight.color.set(hex);
+  }
+
+  setDirectionalLightAzimuthOffset(radians: number) {
+    this.directionalLightAzimuthOffset = radians;
+    this.updateDirectionalLightFromCamera();
+    this.queueRender();
+  }
+
+  setDirectionalLightElevationOffset(radians: number) {
+    this.directionalLightElevationOffset = radians;
+    this.updateDirectionalLightFromCamera();
+    this.queueRender();
   }
 
   /**
